@@ -1,0 +1,298 @@
+# ============================================================================
+# ROS 2 Semantic Fleet Workspace - .gitignore
+# ============================================================================
+
+# -----------------------------------------------------------------------------
+# ROS 2 Build Artifacts
+# -----------------------------------------------------------------------------
+build/
+install/
+log/
+.colcon/
+
+# ROS 2 runtime files
+*.pid
+*.launch.pyc
+
+# -----------------------------------------------------------------------------
+# Python
+# -----------------------------------------------------------------------------
+# Virtual Environments
+venv/
+.venv/
+venv_semantic_fleet/
+env/
+ENV/
+*.egg-info/
+dist/
+.eggs/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# -----------------------------------------------------------------------------
+# Machine Learning / YOLO
+# -----------------------------------------------------------------------------
+# YOLO Model Weights (download separately)
+*.pt
+*.pth
+*.onnx
+*.engine
+*.weights
+
+# Training outputs
+runs/
+weights/
+yolo_output/
+
+# Datasets (if storing locally)
+datasets/
+data/raw/
+data/processed/
+
+# Exception: Keep example/config files
+!**/config/*.pt
+!**/models/example.pt
+
+# -----------------------------------------------------------------------------
+# ROS Bags and Logs
+# -----------------------------------------------------------------------------
+*.bag
+*.bag.active
+*.db3
+*.db3-shm
+*.db3-wal
+rosbag2_*/
+
+# -----------------------------------------------------------------------------
+# IDE / Editor Files
+# -----------------------------------------------------------------------------
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.*.sw?
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# -----------------------------------------------------------------------------
+# Operating System
+# -----------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE_BIN/
+
+# -----------------------------------------------------------------------------
+# Temporary Files
+# -----------------------------------------------------------------------------
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*~
+
+# -----------------------------------------------------------------------------
+# Documentation Build
+# -----------------------------------------------------------------------------
+docs/_build/
+docs/_static/
+docs/_templates/
+site/
+
+# Sphinx
+_build/
+_static/
+_templates/
+
+# -----------------------------------------------------------------------------
+# Gazebo / Simulation
+# -----------------------------------------------------------------------------
+# Gazebo cache
+.gazebo/
+gazebo_models/
+
+# OGRE logs
+Ogre.log
+
+# -----------------------------------------------------------------------------
+# Configuration (Sensitive)
+# -----------------------------------------------------------------------------
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Secrets
+secrets.yaml
+credentials.yaml
+*.pem
+*.key
+
+# Local configuration overrides
+config/local_*.yaml
+*_local.yaml
+
+# -----------------------------------------------------------------------------
+# Build Tools
+# -----------------------------------------------------------------------------
+# CMake
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.cmake
+
+# Make
+Makefile
+
+# Colcon
+.colcon_install_layout
+COLCON_IGNORE
+
+# -----------------------------------------------------------------------------
+# Metrics and Results
+# -----------------------------------------------------------------------------
+# CSV outputs
+metrics.csv
+results/*.csv
+
+# Plot images (keep examples)
+*.png
+!docs/**/*.png
+!images/**/*.png
+!assets/**/*.png
+
+# Videos
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Exception: Keep demo videos in specific folder
+!demo_videos/*.mp4
+
+# -----------------------------------------------------------------------------
+# Custom Workspace Artifacts
+# -----------------------------------------------------------------------------
+# RMF demos (if you removed them)
+src/rmf_demos/
+src/multi_robot_fleet/
+
+# Compiled messages
+**/msg_gen/
+**/srv_gen/
+
+# Setup files (auto-generated)
+setup_workspace.sh.bak
+
+# Requirements lock files (optional - some prefer to track these)
+# requirements.txt.lock
+# poetry.lock
+
+# -----------------------------------------------------------------------------
+# Project Planning & Notes (Private)
+# -----------------------------------------------------------------------------
+# Planning documents (keep private/not for public repo)
+recruiter_focused_plan.md
+planning/
+notes/
+TODO.md
+NOTES.md
+*_notes.md
+*_plan.md
+scratch/
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+test_results/
+test_output/
+*.test
+*.gcda
+*.gcno
+*.gcov
+
+# -----------------------------------------------------------------------------
+# Documentation
+# -----------------------------------------------------------------------------
+*.pdf
+!docs/**/*.pdf
+!paper/**/*.pdf
+
+# -----------------------------------------------------------------------------
+# Miscellaneous
+# -----------------------------------------------------------------------------
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Large files (use Git LFS if needed)
+*.large
+
+# Node modules (if using any JS tools)
+node_modules/
+
+# End of .gitignore
+# External Dependencies (clone separately)
+src/turtlebot3/
+
+# -----------------------------------------------------------------------------
+# External Dependencies (clone separately)
+# -----------------------------------------------------------------------------
+src/turtlebot3/
+
