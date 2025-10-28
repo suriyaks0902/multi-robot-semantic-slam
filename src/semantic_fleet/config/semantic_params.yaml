@@ -1,0 +1,33 @@
+# Semantic Fleet Configuration
+# Single Robot Semantic SLAM Parameters
+
+/**:
+  ros__parameters:
+    use_sim_time: true
+
+yolo_detector:
+  ros__parameters:
+    model_path: "yolov8n.pt"
+    confidence_threshold: 0.5
+    camera_topic: "/camera/image_raw"
+    publish_visualization: true
+    detection_rate: 10.0
+
+object_localizer:
+  ros__parameters:
+    camera_frame: "camera_rgb_optical_frame"
+    world_frame: "map"
+    assumed_object_distance: 1.5
+    camera_fov_h: 1.085  # ~62 degrees
+    camera_fov_v: 0.785  # ~45 degrees
+    image_width: 640
+    image_height: 480
+
+semantic_mapper:
+  ros__parameters:
+    matching_distance_threshold: 0.5
+    update_rate: 1.0
+    min_observations: 2
+    confidence_decay: 0.95
+    min_confidence: 0.3
+

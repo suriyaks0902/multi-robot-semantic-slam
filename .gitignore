@@ -296,3 +296,6 @@ src/turtlebot3/
 # -----------------------------------------------------------------------------
 src/turtlebot3/
 
+# .md
+READY_TO_TEST.md
+TESTING_GUIDE.md
