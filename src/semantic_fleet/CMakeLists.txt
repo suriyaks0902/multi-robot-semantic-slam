@@ -55,5 +55,10 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/
 )
 
+# Install models directory
+install(DIRECTORY models/
+  DESTINATION share/${PROJECT_NAME}/models/
+)
+
 ament_package()
 
