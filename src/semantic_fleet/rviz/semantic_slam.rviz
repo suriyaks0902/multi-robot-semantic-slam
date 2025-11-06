@@ -1,0 +1,133 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+  - Class: rviz_common/Selection
+    Name: Selection
+  - Class: rviz_common/Views
+    Name: Views
+  - Class: rviz_common/Time
+    Name: Time
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Enabled: true
+      Name: Grid
+      Cell Size: 1.0
+      Color: 200; 200; 200
+      Line Style:
+        Line Width: 0.03
+        Value: Lines
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 100
+      Reference Frame: map
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Frame Timeout: 15
+      Marker Scale: 0.5
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Update Interval: 0
+    - Class: rviz_default_plugins/RobotModel
+      Enabled: true
+      Name: RobotModel
+      Robot Description: robot_description
+      Visual Enabled: true
+      Collision Enabled: false
+      Alpha: 1.0
+    - Class: rviz_default_plugins/Map
+      Enabled: true
+      Name: Map
+      Topic: /map
+      Alpha: 0.7
+      Color Scheme: costmap
+      Draw Behind: false
+      Update Topic: /map_updates
+    - Class: rviz_default_plugins/LaserScan
+      Enabled: true
+      Name: LaserScan
+      Topic: /scan
+      Size (m): 0.05
+      Style: Points
+      Color Transformer: FlatColor
+      Color: 255; 0; 0
+      Use Fixed Frame: true
+      Use Rainbow: false
+      Queue Size: 10
+      Selectable: true
+      Alpha: 1.0
+      Decay Time: 0.0
+    - Class: rviz_default_plugins/Image
+      Enabled: true
+      Name: Camera
+      Image Topic: /camera/image_raw
+      Normalize Range: true
+      Median window: 5
+      Transport Hint: raw
+    - Class: rviz_default_plugins/Image
+      Enabled: true
+      Name: YOLO Detections
+      Image Topic: /yolo_detector/detection_visualization
+      Normalize Range: true
+      Median window: 5
+      Transport Hint: raw
+    - Class: rviz_default_plugins/Odometry
+      Enabled: true
+      Name: Odometry
+      Topic: /odom
+      Shape: Arrow
+      Color: 52; 101; 164
+      Alpha: 0.8
+      Shaft Length: 0.5
+      Shaft Radius: 0.05
+      Head Length: 0.2
+      Head Radius: 0.1
+      Keep: 200
+      Covariance:
+        Orientation:
+          Color: 255; 255; 127
+          Scale: 1.0
+          Value: false
+        Position:
+          Color: 204; 51; 204
+          Scale: 1.0
+          Value: false
+  Enabled: true
+  Global Options:
+    Background Color: 25; 25; 30
+    Fixed Frame: map
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/Interact
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/Measure
+    - Class: rviz_default_plugins/SetInitialPose
+    - Class: rviz_default_plugins/SetGoal
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 10
+      Enable Stereo Rendering: false
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0
+      Pitch: 0.6
+      Yaw: 0.785
+      Near Clip Distance: 0.01
+      Target Frame: <Fixed Frame>
+    Saved: ~
+Window Geometry:
+  Height: 1000
+  Width: 1600
+  X: 100
+  Y: 50

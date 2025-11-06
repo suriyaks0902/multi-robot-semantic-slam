@@ -41,7 +41,18 @@ def generate_launch_description():
             output='screen'
         ),
         
-        # 2. Spawn TurtleBot3 using official turtlebot3_gazebo launcher
+        # 2. Robot State Publisher (publishes robot TF tree from URDF)
+        Node(
+            package='robot_state_publisher',
+            executable='robot_state_publisher',
+            output='screen',
+            parameters=[{
+                'use_sim_time': True,
+                'robot_description': Command(['xacro ', urdf_file])
+            }]
+        ),
+        
+        # 3. Spawn TurtleBot3 using official turtlebot3_gazebo launcher
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 os.path.join(turtlebot3_gazebo_dir, 'launch', 'spawn_turtlebot3.launch.py')
@@ -63,6 +74,20 @@ def generate_launch_description():
                 'base_frame': 'base_footprint',
                 'odom_frame': 'odom',
                 'map_frame': 'map',
+                'scan_topic': '/scan',
+                'mode': 'mapping',
+                'map_update_interval': 0.5,
+                'resolution': 0.025,
+                'max_laser_range': 10.0,
+                'minimum_travel_distance': 0.05,
+                'minimum_travel_heading': 0.05,
+                'transform_timeout': 0.5,
+                'tf_buffer_duration': 30.0,
+                'stack_size_to_use': 40000000,
+                'scan_buffer_size': 25,
+                'scan_buffer_maximum_scan_distance': 20.0,
+                'link_match_minimum_response_fine': 0.05,
+                'loop_search_maximum_distance': 5.0,
             }]
         ),
         

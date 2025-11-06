@@ -2,16 +2,62 @@
   <world name='default'>
     <gravity>0 0 -9.8</gravity>
     <physics name='default_physics' default='0' type='ode'>
-      <max_step_size>0.01</max_step_size> <!-- Larger = faster simulation -->
+      <max_step_size>0.01</max_step_size>
       <real_time_factor>1</real_time_factor>
       <real_time_update_rate>200</real_time_update_rate>
       <ode>
         <solver>
-          <type>quick</type>  <!-- Faster solver -->
-          <iters>20</iters>  <!-- Fewer iterations -->
+          <type>quick</type>
+          <iters>50</iters>
+          <sor>1.0</sor>
         </solver>
+        <constraints>
+          <cfm>0.0</cfm>
+          <erp>0.2</erp>
+          <contact_max_correcting_vel>100.0</contact_max_correcting_vel>
+          <contact_surface_layer>0.001</contact_surface_layer>
+        </constraints>
       </ode>
     </physics>
+
+    <!-- Infinite ground plane to prevent robot from falling/freezing at edges -->
+    <model name='ground_plane'>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <cast_shadows>false</cast_shadows>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+    
     <model name='aws_robomaker_warehouse_ShelfF_01_001'>
       <link name='aws_robomaker_warehouse_ShelfF_01::link'>
         <inertial>
