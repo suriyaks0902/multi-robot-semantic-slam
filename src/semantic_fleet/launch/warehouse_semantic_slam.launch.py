@@ -24,6 +24,11 @@ def generate_launch_description():
     turtlebot3_model_folder = 'turtlebot3_waffle_pi'
     sdf_file = os.path.join(turtlebot3_gazebo_dir, 'models', turtlebot3_model_folder, 'model.sdf')
     
+    # Ensure Python venv is in path for YOLO node
+    venv_path = os.path.join(os.path.expanduser('~'), 'Desktop', 'fleet_ws', '.venv')
+    python_path = os.path.join(venv_path, 'lib', 'python3.10', 'site-packages')
+    existing_python_path = os.environ.get('PYTHONPATH', '')
+    new_python_path = f"{python_path}:{existing_python_path}" if existing_python_path else python_path
     
     # Get existing GAZEBO_MODEL_PATH and add both warehouse models and TB3 Gazebo models
     existing_model_path = os.environ.get('GAZEBO_MODEL_PATH', '')
@@ -34,6 +39,9 @@ def generate_launch_description():
     return LaunchDescription([
         # Set Gazebo model path
         SetEnvironmentVariable('GAZEBO_MODEL_PATH', new_model_path),
+        
+        # Set Python path for venv (needed for YOLO)
+        SetEnvironmentVariable('PYTHONPATH', new_python_path),
         
         # 1. Launch Gazebo with warehouse world
         ExecuteProcess(

@@ -67,17 +67,27 @@ Visualization Manager:
     - Class: rviz_default_plugins/Image
       Enabled: true
       Name: Camera
-      Image Topic: /camera/image_raw
-      Normalize Range: true
-      Median window: 5
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /camera/image_raw
       Transport Hint: raw
+      Normalize Range: true
+      Queue Size: 2
     - Class: rviz_default_plugins/Image
       Enabled: true
-      Name: YOLO Detections
-      Image Topic: /yolo_detector/detection_visualization
-      Normalize Range: true
-      Median window: 5
+      Name: YOLO Detections  
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /yolo_detector/detection_visualization
       Transport Hint: raw
+      Normalize Range: true
+      Queue Size: 2
     - Class: rviz_default_plugins/Odometry
       Enabled: true
       Name: Odometry

@@ -156,8 +156,8 @@ class YOLODetector(Node):
                               for obj in detection_msg.objects[:5]])  # Show first 5
                 )
             
-            # Publish visualization
-            if self.pub_viz and len(detection_msg.objects) > 0:
+            # Publish visualization (always, even with no detections)
+            if self.pub_viz:
                 try:
                     viz_msg = self.bridge.cv2_to_imgmsg(cv_image, encoding='bgr8')
                     viz_msg.header = msg.header
