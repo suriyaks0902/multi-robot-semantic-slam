@@ -27,6 +27,7 @@ class SemanticMapper(Node):
         super().__init__('semantic_mapper')
         
         # Declare parameters
+        self.declare_parameter('localized_objects_topic', 'object_localizer/localized_objects')
         self.declare_parameter('matching_distance_threshold', 0.5)  # meters
         self.declare_parameter('update_rate', 1.0)  # Hz
         self.declare_parameter('min_observations', 2)  # Minimum observations before adding to map
@@ -34,6 +35,7 @@ class SemanticMapper(Node):
         self.declare_parameter('min_confidence', 0.3)  # Remove objects below this
         
         # Get parameters
+        self.localized_topic = self.get_parameter('localized_objects_topic').value
         self.match_threshold = self.get_parameter('matching_distance_threshold').value
         update_rate = self.get_parameter('update_rate').value
         self.min_obs = self.get_parameter('min_observations').value
@@ -51,7 +53,7 @@ class SemanticMapper(Node):
         # Subscribers
         self.detection_sub = self.create_subscription(
             DetectedObjects,
-            '/object_localizer/localized_objects',
+            self.localized_topic,
             self.detection_callback,
             10
         )
@@ -67,6 +69,7 @@ class SemanticMapper(Node):
         self.timer = self.create_timer(1.0 / update_rate, self.map_maintenance)
         
         self.get_logger().info('Semantic Mapper initialized')
+        self.get_logger().info(f'  Input localized objects: {self.resolve_topic_name(self.localized_topic)}')
         self.get_logger().info(f'  Matching threshold: {self.match_threshold}m')
         self.get_logger().info(f'  Minimum observations: {self.min_obs}')
         self.get_logger().info(f'  Update rate: {update_rate} Hz')

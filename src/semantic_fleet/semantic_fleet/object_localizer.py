@@ -27,6 +27,7 @@ class ObjectLocalizer(Node):
         super().__init__('object_localizer')
         
         # Declare parameters
+        self.declare_parameter('detected_objects_topic', 'yolo_detector/detected_objects')
         self.declare_parameter('camera_frame', 'camera_rgb_optical_frame')
         self.declare_parameter('world_frame', 'map')
         self.declare_parameter('assumed_object_distance', 1.5)  # meters
@@ -36,6 +37,7 @@ class ObjectLocalizer(Node):
         self.declare_parameter('image_height', 480)
         
         # Get parameters
+        self.detected_topic = self.get_parameter('detected_objects_topic').value
         self.camera_frame = self.get_parameter('camera_frame').value
         self.world_frame = self.get_parameter('world_frame').value
         self.default_distance = self.get_parameter('assumed_object_distance').value
@@ -51,7 +53,7 @@ class ObjectLocalizer(Node):
         # Subscribers
         self.detection_sub = self.create_subscription(
             DetectedObjects,
-            '/yolo_detector/detected_objects',
+            self.detected_topic,
             self.detection_callback,
             10
         )
@@ -64,6 +66,7 @@ class ObjectLocalizer(Node):
         )
         
         self.get_logger().info('Object Localizer initialized')
+        self.get_logger().info(f'  Input detections: {self.resolve_topic_name(self.detected_topic)}')
         self.get_logger().info(f'  Camera frame: {self.camera_frame}')
         self.get_logger().info(f'  World frame: {self.world_frame}')
         self.get_logger().info(f'  Default distance: {self.default_distance}m')

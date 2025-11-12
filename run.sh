@@ -39,3 +39,4 @@ open_term "RViz Semantic" "ros2 launch semantic_fleet rviz_semantic.launch.py"
 echo "All terminals launched."
 
 
+image.png
