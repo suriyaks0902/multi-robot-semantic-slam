@@ -33,6 +33,9 @@ setup(
             'yolo_detector = semantic_fleet.yolo_detector:main',
             'object_localizer = semantic_fleet.object_localizer:main',
             'semantic_mapper = semantic_fleet.semantic_mapper:main',
+            'semantic_map_merger = semantic_fleet.semantic_map_merger:main',
+            'semantic_map_visualizer = semantic_fleet.semantic_map_visualizer:main',
+            'tf_republisher = semantic_fleet.tf_republisher:main',
         ],
     },
 )

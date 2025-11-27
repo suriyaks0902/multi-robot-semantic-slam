@@ -24,8 +24,8 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 100
-      Reference Frame: map
+      Plane Cell Count: 150
+      Reference Frame: world
     - Class: rviz_default_plugins/TF
       Enabled: true
       Frame Timeout: 15
@@ -44,12 +44,40 @@ Visualization Manager:
       Alpha: 1.0
     - Class: rviz_default_plugins/Map
       Enabled: true
-      Name: Map
-      Topic: /map
-      Alpha: 0.7
+      Name: Map - Robot 1
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_1/map
+      Alpha: 0.5 
       Color Scheme: costmap
-      Draw Behind: false
-      Update Topic: /map_updates
+      Draw Behind: true
+      Update Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /robot_1/map_updates
+    - Class: rviz_default_plugins/Map
+      Enabled: true
+      Name: Map - Robot 2
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_2/map
+      Alpha: 0.5
+      Color Scheme: costmap
+      Draw Behind: true
+      Update Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /robot_2/map_updates
     - Class: rviz_default_plugins/LaserScan
       Enabled: true
       Name: LaserScan
@@ -64,6 +92,31 @@ Visualization Manager:
       Selectable: true
       Alpha: 1.0
       Decay Time: 0.0
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: false
+      Name: Semantic Map (local)
+      Queue Size: 10
+      Topic: /semantic_mapper/semantic_map_markers
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: false
+      Name: Semantic Map - Robot 1
+      Queue Size: 10
+      Topic: /robot_1/semantic_mapper/semantic_map_markers
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: false
+      Name: Semantic Map - Robot 2
+      Queue Size: 10
+      Topic: /robot_2/semantic_mapper/semantic_map_markers
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: false
+      Name: Semantic Map - Robot 3
+      Queue Size: 10
+      Topic: /robot_3/semantic_mapper/semantic_map_markers
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: false
+      Name: Semantic Map - Global
+      Queue Size: 10
+      Topic: /semantic_fleet/global_semantic_map_markers
     - Class: rviz_default_plugins/Image
       Enabled: true
       Name: Camera
@@ -112,7 +165,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 25; 25; 30
-    Fixed Frame: map
+    Fixed Frame: world
     Frame Rate: 30
   Name: root
   Tools:
