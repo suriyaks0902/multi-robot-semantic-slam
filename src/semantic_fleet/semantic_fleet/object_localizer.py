@@ -47,7 +47,7 @@ class ObjectLocalizer(Node):
         self.img_height = self.get_parameter('image_height').value
         
         # TF2 buffer and listener
-        self.tf_buffer = Buffer()
+        self.tf_buffer = Buffer(cache_time=Duration(seconds=60.0))
         self.tf_listener = TransformListener(self.tf_buffer, self)
         
         # Subscribers
@@ -83,7 +83,7 @@ class ObjectLocalizer(Node):
                 self.world_frame,
                 self.camera_frame,
                 rclpy.time.Time(),  # Get latest available transform
-                timeout=Duration(seconds=1.0)
+                timeout=Duration(seconds=2.0)
             )
             
             # Create localized message
@@ -142,10 +142,50 @@ class ObjectLocalizer(Node):
                 )
             
         except (LookupException, ExtrapolationException) as e:
+            # FALLBACK: Publish objects in the camera frame when the TF transform fails
             self.get_logger().warn(
-                f'TF transform failed: {str(e)}',
+                f'TF transform failed: ({str(e)}), publishing in camera frame as fallback',
                 throttle_duration_sec=5.0
             )
+
+            # Create localized message
+            localized_msg = DetectedObjects()
+            localized_msg.header.frame_id = self.camera_frame
+            localized_msg.header.stamp = self.get_clock().now().to_msg()
+
+            for obj in msg.objects:
+                bbox = obj.bbox_2d
+                if len(bbox) != 4:
+                    continue
+
+                #calculate center of bounding box
+                center_x = (bbox[0] + bbox[2]) / 2.0
+                center_y = (bbox[1] + bbox[3]) / 2.0
+
+                #convert pixel coordinates to camera angles
+                #normalized coordinates (-0.5 to 0.5)
+                norm_x = (center_x - self.img_width / 2.0) / self.img_width
+                norm_y = (center_y - self.img_height / 2.0) / self.img_height
+                
+                #calculate angles
+                angle_h = norm_x * self.fov_h
+                angle_v = norm_y * self.fov_v
+
+                #set 3d posittion directly in camera frame (No transform needed)
+                obj.position_3d.x = self.default_distance
+                obj.position_3d.y = -self.default_distance * angle_h
+                obj.position_3d.z = -self.default_distance * angle_v
+
+                localized_msg.objects.append(obj)
+
+            # publish fallback localized objects
+            if len(localized_msg.objects) > 0:
+                self.localized_pub.publish(localized_msg)
+                self.get_logger().info(
+                    f'Localized {len(localized_msg.objects)} objects in {self.camera_frame} frame (Fallback)',
+                    throttle_duration_sec=2.0
+                )
+
         except Exception as e:
             self.get_logger().error(f'Error in detection_callback: {str(e)}')
 

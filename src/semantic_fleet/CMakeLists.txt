@@ -46,6 +46,18 @@ install(PROGRAMS
   RENAME semantic_mapper
 )
 
+install(PROGRAMS
+  semantic_fleet/semantic_map_merger.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME semantic_map_merger
+)
+
+install(PROGRAMS
+  semantic_fleet/semantic_map_visualizer.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME semantic_map_visualizer
+)
+
 # Install launch files
 install(DIRECTORY
   launch

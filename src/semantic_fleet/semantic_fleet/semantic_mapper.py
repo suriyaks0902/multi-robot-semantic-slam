@@ -33,6 +33,7 @@ class SemanticMapper(Node):
         self.declare_parameter('min_observations', 2)  # Minimum observations before adding to map
         self.declare_parameter('confidence_decay', 0.95)  # Per update cycle
         self.declare_parameter('min_confidence', 0.3)  # Remove objects below this
+        self.declare_parameter('output_frame', 'map')
         
         # Get parameters
         self.localized_topic = self.get_parameter('localized_objects_topic').value
@@ -41,6 +42,7 @@ class SemanticMapper(Node):
         self.min_obs = self.get_parameter('min_observations').value
         self.conf_decay = self.get_parameter('confidence_decay').value
         self.min_conf = self.get_parameter('min_confidence').value
+        self.output_frame = self.get_parameter('output_frame').value
         
         # Semantic map storage
         # Format: {object_id: {'class': str, 'position': Point, 
@@ -73,6 +75,7 @@ class SemanticMapper(Node):
         self.get_logger().info(f'  Matching threshold: {self.match_threshold}m')
         self.get_logger().info(f'  Minimum observations: {self.min_obs}')
         self.get_logger().info(f'  Update rate: {update_rate} Hz')
+        self.get_logger().info(f'  Output frame: {self.output_frame}')
         
     def detection_callback(self, msg):
         """Update semantic map with new detections"""
@@ -215,7 +218,7 @@ class SemanticMapper(Node):
             return
         
         map_msg = SemanticMap()
-        map_msg.header.frame_id = 'map'
+        map_msg.header.frame_id = self.output_frame
         map_msg.header.stamp = self.get_clock().now().to_msg()
         
         for obj_id, obj in self.semantic_map.items():

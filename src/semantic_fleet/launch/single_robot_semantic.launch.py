@@ -38,6 +38,14 @@ def generate_launch_description():
         ),
         
         LogInfo(msg='Starting Semantic Fleet - Single Robot Demo'),
+
+        # Anchor single robot odom frame to a stable world frame for RViz
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='semantic_fleet_world_anchor',
+            arguments=['0.0', '0.0', '0.0', '0.0', '0.0', '0.0', '1.0', 'world', 'odom']
+        ),
         
         # YOLO Detector Node
         Node(
@@ -87,6 +95,21 @@ def generate_launch_description():
                 'confidence_decay': 0.95,
                 'min_confidence': 0.3,
             }]
+        ),
+
+        # Semantic map visualization for RViz
+        Node(
+            package='semantic_fleet',
+            executable='semantic_map_visualizer',
+            name='semantic_map_visualizer',
+            output='screen',
+            parameters=[{
+                'use_sim_time': use_sim_time,
+                'semantic_map_topics': ['/semantic_mapper/semantic_map'],
+                'marker_scale': 0.35,
+                'marker_lifetime': 2.0,
+                'frame_fallback': 'map',
+            }],
         ),
         
         LogInfo(msg='Semantic Fleet nodes launched! Waiting for camera input...'),
