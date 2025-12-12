@@ -36,6 +36,7 @@ setup(
             'semantic_map_merger = semantic_fleet.semantic_map_merger:main',
             'semantic_map_visualizer = semantic_fleet.semantic_map_visualizer:main',
             'tf_republisher = semantic_fleet.tf_republisher:main',
+            'occupancy_map_merger = semantic_fleet.occupancy_map_merger:main',
         ],
     },
 )

@@ -30,23 +30,22 @@ class TFRepublisher(Node):
         self.reference_robot = self.get_parameter('reference_robot').value
         
         # Declare wildcard parameters to accept any robot offset parameters
-        # This allows launch file to pass robot_2.offset_x, robot_3.offset_x, etc.
+        # This allows launch file to pass robot_1.offset_x, robot_2.offset_x, etc.
+        robot_params = []
+        for i in range(1, 11):  # Support up to 10 robots
+            robot_params.extend([
+                (f'robot_{i}.offset_x', 0.0),
+                (f'robot_{i}.offset_y', 0.0),
+                (f'robot_{i}.offset_z', 0.0),
+                (f'robot_{i}.offset_yaw', 0.0),
+            ])
+        
         self.declare_parameters(
             namespace='',
-            parameters=[
-                ('robot_2.offset_x', 0.0),
-                ('robot_2.offset_y', 0.0),
-                ('robot_2.offset_z', 0.0),
-                ('robot_2.offset_yaw', 0.0),
-                ('robot_3.offset_x', 0.0),
-                ('robot_3.offset_y', 0.0),
-                ('robot_3.offset_z', 0.0),
-                ('robot_3.offset_yaw', 0.0),
-                # Add more robots as needed
-            ]
+            parameters=robot_params
         )
         
-        # Parse flattened robot offset parameters (format: robot_2.offset_x, robot_2.offset_y, etc.)
+        # Parse flattened robot offset parameters (format: robot_1.offset_x, robot_2.offset_y, etc.)
         # Get all parameter names to find robot names
         all_param_names = [name for name in self._parameters.keys()]
         robot_names = set()
@@ -54,26 +53,26 @@ class TFRepublisher(Node):
         for param_name in all_param_names:
             if '.' in param_name and param_name.endswith('.offset_x'):
                 robot_name = param_name.split('.')[0]
-                if robot_name != self.reference_robot:
-                    robot_names.add(robot_name)
+                robot_names.add(robot_name)
         
         # Parse offset parameters for each discovered robot
         self.robots = {}
         for robot_name in robot_names:
-            # Check if this robot has all required parameters set (non-zero)
-            offset_x = float(self.get_parameter(f'{robot_name}.offset_x').value)
-            offset_y = float(self.get_parameter(f'{robot_name}.offset_y').value)
-            offset_z = float(self.get_parameter(f'{robot_name}.offset_z').value)
-            offset_yaw = float(self.get_parameter(f'{robot_name}.offset_yaw').value)
-            
-            # Only add robot if at least one offset is non-zero (robot was actually configured)
-            if offset_x != 0.0 or offset_y != 0.0 or offset_z != 0.0 or offset_yaw != 0.0:
+            try:
+                offset_x = float(self.get_parameter(f'{robot_name}.offset_x').value)
+                offset_y = float(self.get_parameter(f'{robot_name}.offset_y').value)
+                offset_z = float(self.get_parameter(f'{robot_name}.offset_z').value)
+                offset_yaw = float(self.get_parameter(f'{robot_name}.offset_yaw').value)
+                
+                # Add robot (even if offsets are zero - all robots need TF published)
                 self.robots[robot_name] = {
                     'offset_x': offset_x,
                     'offset_y': offset_y,
                     'offset_z': offset_z,
                     'offset_yaw': offset_yaw,
                 }
+            except Exception as e:
+                self.get_logger().warn(f'Failed to get parameters for {robot_name}: {e}')
         
         # Log initialization info
         self.get_logger().info(f'TF Republisher initialized')

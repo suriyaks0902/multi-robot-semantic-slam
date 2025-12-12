@@ -58,6 +58,18 @@ install(PROGRAMS
   RENAME semantic_map_visualizer
 )
 
+install(PROGRAMS
+  semantic_fleet/tf_republisher.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME tf_republisher
+)
+
+install(PROGRAMS
+  semantic_fleet/occupancy_map_merger.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME occupancy_map_merger
+)
+
 # Install launch files
 install(DIRECTORY
   launch

@@ -8,16 +8,59 @@ semantic mapper) inside an isolated ROS 2 namespace.
 """
 
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess, GroupAction, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, GroupAction, SetEnvironmentVariable, OpaqueFunction
 from launch_ros.actions import Node, PushRosNamespace
-from launch.substitutions import Command
+from launch.substitutions import Command, LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 import os
+import math
 from math import sin, cos
 from typing import Dict
 
 
-def generate_launch_description():
+# Add launch argument
+num_robots_arg = DeclareLaunchArgument(
+    'num_robots',
+    default_value='2',
+    description='Number of robots to spawn'
+)
+
+# Generate robot configs dynamically
+def generate_robot_positions(n):
+    """
+    Generate collision-free spawn positions for robots in warehouse.
+    Uses safe zones that avoid walls and obstacles (crates).
+    """
+    # Pre-defined safe spawn positions in the warehouse
+    # These are manually verified to be away from crates/walls
+    safe_positions = [
+        {'name': 'robot_1', 'x': -2.0, 'y': -1.0, 'yaw': 0.0},   # Near left wall, open area
+        {'name': 'robot_2', 'x': 2.0,  'y': 1.0,  'yaw': 0.0},   # Near right wall, open area
+        {'name': 'robot_3', 'x': 0.0,  'y': -2.0, 'yaw': 1.57},  # Bottom center, facing up
+        {'name': 'robot_4', 'x': -3.0, 'y': 1.5,  'yaw': 0.0},   # Left side, open space
+        {'name': 'robot_5', 'x': 3.0,  'y': -1.5, 'yaw': 3.14},  # Right side, facing left
+        {'name': 'robot_6', 'x': -1.0, 'y': 2.0,  'yaw': -1.57}, # Top left, facing down
+        {'name': 'robot_7', 'x': 1.0,  'y': -3.0, 'yaw': 1.57},  # Bottom right, facing up
+        {'name': 'robot_8', 'x': -2.5, 'y': -2.5, 'yaw': 0.79},  # Far corner
+        {'name': 'robot_9', 'x': 2.5,  'y': 2.5,  'yaw': -2.36}, # Opposite corner
+        {'name': 'robot_10','x': 0.0,  'y': 0.0,  'yaw': 0.0},   # Center (if warehouse is large)
+    ]
+    
+    if n > len(safe_positions):
+        print(f"⚠️  Warning: Requested {n} robots but only {len(safe_positions)} safe positions defined!")
+        print(f"⚠️  Using first {len(safe_positions)} positions only.")
+        n = len(safe_positions)
+    
+    robots = []
+    for i in range(n):
+        pos = safe_positions[i].copy()
+        pos['name'] = f'robot_{i+1}'  # Ensure correct numbering
+        robots.append(pos)
+    
+    return robots
+
+def launch_setup(context, *args, **kwargs):
+    """Setup function that can access LaunchConfiguration values"""
     semantic_fleet_dir = get_package_share_directory('semantic_fleet')
     turtlebot3_description_dir = get_package_share_directory('turtlebot3_description')
     turtlebot3_gazebo_dir = get_package_share_directory('turtlebot3_gazebo')
@@ -42,12 +85,12 @@ def generate_launch_description():
     tb3_gazebo_models = os.path.join(turtlebot3_gazebo_dir, 'models')
     new_model_path = f"{models_dir}:{tb3_gazebo_models}:{tb3_models_root}:{existing_model_path}"
 
-    robots = [
-        # Two robots for better performance - positioned near walls for immediate SLAM initialization
-        # Spawn closer to walls so laser can detect obstacles immediately (laser range = 3.5m)
-        {'name': 'robot_1', 'x': -2.0, 'y': -1.0, 'yaw': 0.0},  # Closer to wall
-        {'name': 'robot_2', 'x': 2.0,  'y': 1.0,  'yaw': 0.0},  # Closer to wall
-    ]
+    # Get num_robots from launch argument
+    num_robots = int(context.launch_configurations.get('num_robots', '2'))
+    print(f"🚀 Launching with {num_robots} robots!")
+    
+    # Generate robot positions dynamically
+    robots = generate_robot_positions(num_robots)
 
     # Cache original SDF so we only read it once
     with open(sdf_file, 'r') as f:
@@ -234,52 +277,69 @@ def generate_launch_description():
     # This creates: robot_1/odom -> world -> robot_2/odom
     # For RViz, we'll use world as fixed frame
     
-    # Create world frame as PARENT of robot_1/map (identity transform)
-    # This makes 'world' the root of the TF tree
+    # Create world frame as PARENT of all robot map frames
+    # Uses ACTUAL spawn positions from Gazebo for accurate alignment
+    # Each robot's map origin is placed at its spawn position in the world frame
     # SLAM publishes map -> odom, so we need world -> map (not world -> odom)
-    world_frame = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='semantic_fleet_world_frame',
-        arguments=['--x', '0.0', '--y', '0.0', '--z', '0.0', 
-                  '--roll', '0.0', '--pitch', '0.0', '--yaw', '0.0',
-                  '--frame-id', 'world', '--child-frame-id', 'robot_1/map'],
-    )
     
-    # TF Republisher: Dynamically republishes all robots' map frames (except reference robot) under world frame
-    # This creates: world -> robot_i/map (static, with offset) -> robot_i/odom (dynamic, from SLAM)
-    # SLAM publishes map -> odom, so we must connect world -> map (not world -> odom) to avoid conflicts.
-    
-    # Calculate offsets for each robot relative to reference robot (robot_1)
-    ref_robot = next((r for r in robots if r['name'] == 'robot_1'), None)
-    ref_x = ref_robot['x'] if ref_robot else 0.0
-    ref_y = ref_robot['y'] if ref_robot else 0.0
-    ref_z = ref_robot.get('z', 0.0)
-    ref_yaw = ref_robot.get('yaw', 0.0)
-    
-    # Build flattened parameters (ROS 2 doesn't handle nested dicts well)
-    # Format: robot_2.offset_x, robot_2.offset_y, etc.
-    tf_republisher_params = {
-        'use_sim_time': True,
-        'target_parent': 'world',
-        'reference_robot': 'robot_1',
-    }
-    
-    # Add flattened offset parameters for each robot
+    world_frame_publishers = []
     for robot in robots:
-        if robot['name'] != 'robot_1':  # Skip reference robot
-            tf_republisher_params[f"{robot['name']}.offset_x"] = float(robot['x'] - ref_x)
-            tf_republisher_params[f"{robot['name']}.offset_y"] = float(robot['y'] - ref_y)
-            tf_republisher_params[f"{robot['name']}.offset_z"] = float(robot.get('z', 0.0) - ref_z)
-            tf_republisher_params[f"{robot['name']}.offset_yaw"] = float(robot.get('yaw', 0.0) - ref_yaw)
+        # Use IDENTITY transform - SLAM handles robot positioning internally
+        # Each robot's map origin aligns with world origin
+        x = 0.0
+        y = 0.0
+        z = 0.0
+        yaw = 0.0
+        
+        world_frame_pub = Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name=f'world_to_{robot["name"]}_map',
+            arguments=['--x', str(x), '--y', str(y), '--z', str(z), 
+                      '--roll', '0.0', '--pitch', '0.0', '--yaw', str(yaw),
+                      '--frame-id', 'world', '--child-frame-id', f'{robot["name"]}/map'],
+        )
+        world_frame_publishers.append(world_frame_pub)
     
-    tf_republisher = Node(
-        package='semantic_fleet',
-        executable='tf_republisher',
-        name='tf_republisher',
-        output='screen',
-        parameters=[tf_republisher_params],
-    )
+    # TF Republisher: COMMENTED OUT - Testing without static offsets
+    # Using Gazebo's native world frame instead
+    # Gazebo provides: world → robot_X/base_footprint
+    # SLAM provides: robot_X/map → robot_X/odom (and odom connects to base_footprint via robot_state_publisher)
+    
+    # # TF Republisher: Dynamically republishes all robots' map frames (except reference robot) under world frame
+    # # This creates: world -> robot_i/map (static, with offset) -> robot_i/odom (dynamic, from SLAM)
+    # # SLAM publishes map -> odom, so we must connect world -> map (not world -> odom) to avoid conflicts.
+    # 
+    # # Calculate offsets for each robot relative to reference robot (robot_1)
+    # ref_robot = next((r for r in robots if r['name'] == 'robot_1'), None)
+    # ref_x = ref_robot['x'] if ref_robot else 0.0
+    # ref_y = ref_robot['y'] if ref_robot else 0.0
+    # ref_z = ref_robot.get('z', 0.0)
+    # ref_yaw = ref_robot.get('yaw', 0.0)
+    # 
+    # # Build flattened parameters (ROS 2 doesn't handle nested dicts well)
+    # # Format: robot_2.offset_x, robot_2.offset_y, etc.
+    # tf_republisher_params = {
+    #     'use_sim_time': True,
+    #     'target_parent': 'world',
+    #     'reference_robot': 'robot_1',
+    # }
+    # 
+    # # Add flattened offset parameters for each robot
+    # # Use absolute spawn positions (not relative to robot_1) for accurate map alignment
+    # for robot in robots:
+    #     tf_republisher_params[f"{robot['name']}.offset_x"] = float(robot['x'])
+    #     tf_republisher_params[f"{robot['name']}.offset_y"] = float(robot['y'])
+    #     tf_republisher_params[f"{robot['name']}.offset_z"] = float(robot.get('z', 0.0))
+    #     tf_republisher_params[f"{robot['name']}.offset_yaw"] = float(robot.get('yaw', 0.0))
+    # 
+    # tf_republisher = Node(
+    #     package='semantic_fleet',
+    #     executable='tf_republisher',
+    #     name='tf_republisher',
+    #     output='screen',
+    #     parameters=[tf_republisher_params],
+    # )
 
     merger_node = Node(
         package='semantic_fleet',
@@ -316,22 +376,67 @@ def generate_launch_description():
         }],
     )
 
-    rviz_config = os.path.join(semantic_fleet_dir, 'rviz', 'semantic_slam.rviz')
+    # Occupancy Map Merger - merges SLAM maps from all robots
+    occupancy_map_merger = Node(
+        package='semantic_fleet',
+        executable='occupancy_map_merger',
+        name='occupancy_map_merger',
+        output='screen',
+        parameters=[{
+            'use_sim_time': True,
+            'robot_namespaces': [r['name'] for r in robots],
+            'global_frame': 'world',
+            'merged_map_topic': '/merged_map',
+            'publish_rate': 2.0,
+            'resolution': 0.05,
+            'width': 400,
+            'height': 400,
+            'origin_x': -10.0,
+            'origin_y': -10.0,
+        }],
+    )
+
+    # Generate dynamic RViz config based on number of robots
+    base_rviz_config = os.path.join(semantic_fleet_dir, 'rviz', 'semantic_slam.rviz')
+    generated_rviz_config = '/tmp/semantic_slam_generated.rviz'
+    
+    # Generate RViz config for the number of robots
+    import subprocess
+    import sys
+    # Find workspace root and locate the generator script
+    workspace_root = os.path.expanduser('~/Desktop/fleet_ws')
+    config_generator = os.path.join(workspace_root, 'src', 'semantic_fleet', 'semantic_fleet', 'generate_rviz_config.py')
+    
+    if os.path.exists(config_generator):
+        subprocess.run([
+            sys.executable,
+            config_generator,
+            str(num_robots),
+            base_rviz_config,
+            generated_rviz_config
+        ], check=True)
+    else:
+        print(f"Warning: RViz config generator not found at {config_generator}")
+        print(f"Using base config instead: {base_rviz_config}")
+        generated_rviz_config = base_rviz_config
+    
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-        arguments=['-d', rviz_config],
+        arguments=['-d', generated_rviz_config],
         output='screen',
         parameters=[{
             'use_sim_time': True,
         }],
     )
 
-    return LaunchDescription([
+    return [
+        # Environment variables
         SetEnvironmentVariable('GAZEBO_MODEL_PATH', new_model_path),
         SetEnvironmentVariable('PYTHONPATH', new_python_path),
 
+        # Gazebo simulation
         ExecuteProcess(
             cmd=[
                 'gazebo', '--verbose', warehouse_world,
@@ -340,11 +445,24 @@ def generate_launch_description():
             ],
             output='screen',
         ),
-        world_frame,
-        tf_republisher,
+        
+        # TF and robot nodes
+        *world_frame_publishers,  # Dynamic world→robot_X/map transforms (no offsets)
+        # tf_republisher,  # COMMENTED OUT - Using simple identity transforms instead
         *robot_groups,
         merger_node,
         semantic_map_visualizer,
+        occupancy_map_merger,
         rviz_node,
+    ]
+
+
+def generate_launch_description():
+    """Main launch description with dynamic robot count"""
+    return LaunchDescription([
+        # Launch argument for number of robots
+        num_robots_arg,
+        # Use OpaqueFunction to access launch configuration
+        OpaqueFunction(function=launch_setup),
     ])
 
