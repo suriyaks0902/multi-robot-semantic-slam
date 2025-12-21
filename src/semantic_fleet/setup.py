@@ -37,6 +37,9 @@ setup(
             'semantic_map_visualizer = semantic_fleet.semantic_map_visualizer:main',
             'tf_republisher = semantic_fleet.tf_republisher:main',
             'occupancy_map_merger = semantic_fleet.occupancy_map_merger:main',
+            'cbba_allocator = semantic_fleet.cbba_allocator:main',
+            'fleet_manager = semantic_fleet.fleet_manager:main',
+            'task_generator = semantic_fleet.task_generator:main',
         ],
     },
 )

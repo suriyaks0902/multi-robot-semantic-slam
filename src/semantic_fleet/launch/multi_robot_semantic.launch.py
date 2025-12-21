@@ -253,6 +253,19 @@ def launch_setup(context, *args, **kwargs):
                         'output_frame': f'{namespace}/map',
                     }],
                 ),
+
+                # CBBA Allocator per robot (Week 3 - commented out until implemented)
+                # Node(
+                #     package='semantic_fleet',
+                #     executable='cbba_allocator',
+                #     name='cbba_allocator',
+                #     output='screen',
+                #     parameters=[{
+                #         'use_sim_time': True,
+                #         'robot_id': namespace,
+                #         'num_robots': num_robots,
+                #     }],
+                # ),
             ])
         )
 
@@ -396,6 +409,32 @@ def launch_setup(context, *args, **kwargs):
         }],
     )
 
+    # Fleet Manager - Central coordinator (Week 3 - commented out until implemented)
+    # fleet_manager = Node(
+    #     package='semantic_fleet',
+    #     executable='fleet_manager',
+    #     name='fleet_manager',
+    #     output='screen',
+    #     parameters=[{
+    #         'use_sim_time': True,
+    #         'num_robots': num_robots,
+    #     }],
+    # )
+
+    # Task Generator - Generates tasks from semantic map (Week 3 - commented out until implemented)
+    # task_generator = Node(
+    #     package='semantic_fleet',
+    #     executable='task_generator',
+    #     name='task_generator',
+    #     output='screen',
+    #     parameters=[{
+    #         'use_sim_time': True,
+    #         'auto_generate': True,
+    #         'min_confidence': 0.6,
+    #         'task_types': ['pickup', 'inspect'],
+    #     }],
+    # )
+
     # Generate dynamic RViz config based on number of robots
     base_rviz_config = os.path.join(semantic_fleet_dir, 'rviz', 'semantic_slam.rviz')
     generated_rviz_config = '/tmp/semantic_slam_generated.rviz'
@@ -453,6 +492,8 @@ def launch_setup(context, *args, **kwargs):
         merger_node,
         semantic_map_visualizer,
         occupancy_map_merger,
+        # fleet_manager,  # Week 3 - commented out until implemented
+        # task_generator,  # Week 3 - commented out until implemented
         rviz_node,
     ]
 

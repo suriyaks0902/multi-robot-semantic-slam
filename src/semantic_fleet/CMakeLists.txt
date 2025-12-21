@@ -18,6 +18,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/DetectedObject.msg"
   "msg/DetectedObjects.msg"
   "msg/SemanticMap.msg"
+  "msg/Task.msg"
+  "msg/TaskList.msg"
+  "msg/BidInfo.msg"
+  "msg/RobotState.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )
 
@@ -68,6 +72,24 @@ install(PROGRAMS
   semantic_fleet/occupancy_map_merger.py
   DESTINATION lib/${PROJECT_NAME}
   RENAME occupancy_map_merger
+)
+
+install(PROGRAMS
+  semantic_fleet/cbba_allocator.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME cbba_allocator
+)
+
+install(PROGRAMS
+  semantic_fleet/fleet_manager.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME fleet_manager
+)
+
+install(PROGRAMS
+  semantic_fleet/task_generator.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME task_generator
 )
 
 # Install launch files
